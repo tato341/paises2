@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+    <title>Atlas Admin · Gestión de Países</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+        :root{
+            --bg:#070b16;
+            --bg-2:#0b1020;
+            --panel:rgba(15,23,42,.78);
+            --panel-strong:#111827;
+            --panel-soft:rgba(30,41,59,.58);
+            --text:#f8fafc;
+            --muted:#94a3b8;
+            --line:rgba(148,163,184,.15);
+            --primary:#7c3aed;
+            --primary-2:#4f46e5;
+            --cyan:#06b6d4;
+            --green:#10b981;
+            --red:#f43f5e;
+            --orange:#f59e0b;
+            --shadow:0 24px 80px rgba(0,0,0,.34);
+            --radius:24px;
+        }
+
+        /* TEMA CLARO */
+        body.light{
+            --bg:#eef2ff;
+            --bg-2:#f8fafc;
+            --panel:rgba(255,255,255,.82);
+            --panel-strong:#ffffff;
+            --panel-soft:rgba(255,255,255,.72);
+            --text:#172033;
+            --muted:#64748b;
+            --line:rgba(71,85,105,.14);
+            --shadow:0 24px 70px rgba(30,41,59,.13);
+        }
+
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{scroll-behavior:smooth}
+        body{
+            min-height:100vh;
+            color:var(--text);
+            font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(124,58,237,.22), transparent 28%),
+                radial-gradient(circle at 90% 10%, rgba(6,182,212,.15), transparent 25%),
+                linear-gradient(135deg,var(--bg),var(--bg-2) 55%,#0a0f1d);
+            overflow-x:hidden;
+            transition:background .35s ease,color .35s ease;
+        }
+
+        body.light{
+            background:
+                radial-gradient(circle at 10% 0%,rgba(124,58,237,.13),transparent 28%),
+                radial-gradient(circle at 90% 10%,rgba(6,182,212,.10),transparent 25%),
+                linear-gradient(135deg,var(--bg),var(--bg-2) 55%,#eef2ff);
+        }
+
+        body::before{
+            content:"";
+            position:fixed;
+            inset:0;
+            pointer-events:none;
+            opacity:.22;
+            background-image:
+                linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+                linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size:40px 40px;
+            mask-image:linear-gradient(to bottom,black,transparent 85%);
+        }
+
+        button,input{font:inherit}
+        button{cursor:pointer}
+        ::selection{background:rgba(124,58,237,.45);color:white}
+
+        .app{
+            width:min(1450px,100%);
+            min-height:100vh;
+            margin:auto;
+            padding:22px;
+            display:grid;
+            grid-template-columns:250px 1fr;
+            gap:22px;
+        }
+
+        /* SIDEBAR */
+        .sidebar{
+            position:sticky;
+            top:22px;
+            height:calc(100vh - 44px);
+            min-height:650px;
+            padding:22px 16px;
+            border:1px solid var(--line);
+            border-radius:28px;
+            background:var(--panel);
+            backdrop-filter:blur(22px);
+            box-shadow:var(--shadow);
+            display:flex;
+            flex-direction:column;
+        }
+
+        .brand{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:8px 8px 26px;
+        }
+
+        .brand-logo{
+            width:46px;height:46px;
+            display:grid;place-items:center;
+            border-radius:15px;
+            font-size:23px;
+            background:linear-gradient(135deg,#7c3aed,#06b6d4);
+            box-shadow:0 10px 28px rgba(124,58,237,.3);
+        }
+
+        .brand strong{
+            font-family:"Space Grotesk",sans-serif;
+            font-size:18px;
+            letter-spacing:-.03em;
+        }
+
+        .brand span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+
+        .nav-label{
+            padding:14px 12px 9px;
+            color:#64748b;
+            font-size:10px;
+            text-transform:uppercase;
+            letter-spacing:.14em;
+            font-weight:800;
+        }
+
+        .nav{
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+        }
+
+        .nav-item{
+            border:1px solid transparent;
+            background:transparent;
+            color:#94a3b8;
+            padding:12px 13px;
+            border-radius:13px;
+            display:flex;
+            align-items:center;
+            gap:12px;
+            text-align:left;
+            transition:.2s ease;
+        }
+
+        .nav-item:hover{background:rgba(148,163,184,.07);color:white}
+        .nav-item.active{
+            color:white;
+            border-color:rgba(124,58,237,.28);
+            background:linear-gradient(90deg,rgba(124,58,237,.22),rgba(79,70,229,.08));
+            box-shadow:inset 3px 0 0 #8b5cf6;
+        }
+
+        .nav-icon{width:20px;text-align:center;font-size:16px}
+        .sidebar-bottom{margin-top:auto}
+
+        .system{
+            padding:15px;
+            border-radius:18px;
+            border:1px solid var(--line);
+            background:rgba(16,185,129,.06);
+        }
+
+        .system-top{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+        .dot{
+            width:8px;height:8px;border-radius:50%;
+            background:#34d399;
+            box-shadow:0 0 0 5px rgba(52,211,153,.1),0 0 18px #34d399;
+        }
+        .system p{color:var(--muted);font-size:11px;line-height:1.5;margin-top:8px}
+
+        /* MAIN */
+        .main{min-width:0;padding:12px 4px 40px}
+
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:20px;
+            margin-bottom:26px;
+        }
+
+        .eyebrow{
+            color:#a78bfa;
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:.16em;
+            font-weight:800;
+            margin-bottom:7px;
+        }
+
+        h1{
+            font-family:"Space Grotesk",sans-serif;
+            font-size:clamp(28px,3vw,40px);
+            line-height:1;
+            letter-spacing:-.045em;
+        }
+
+        .subtitle{color:var(--muted);font-size:13px;margin-top:9px}
+
+        .top-actions{display:flex;align-items:center;gap:9px}
+
+        .icon-btn,.theme-btn{
+            width:43px;height:43px;
+            border-radius:13px;
+            border:1px solid var(--line);
+            background:var(--panel-soft);
+            color:#cbd5e1;
+            display:grid;place-items:center;
+            transition:.2s;
+        }
+        .icon-btn:hover,.theme-btn:hover{transform:translateY(-2px);border-color:rgba(167,139,250,.4);color:white}
+
+        .avatar{
+            width:43px;height:43px;
+            border-radius:14px;
+            display:grid;place-items:center;
+            font-weight:800;
+            background:linear-gradient(135deg,#312e81,#0e7490);
+            border:1px solid rgba(255,255,255,.1);
+        }
+
+        /* HERO */
+        .hero{
+            position:relative;
+            overflow:hidden;
+            padding:28px;
+            border:1px solid rgba(167,139,250,.18);
+            border-radius:var(--radius);
+            background:
+                radial-gradient(circle at 80% 10%,rgba(6,182,212,.22),transparent 25%),
+                radial-gradient(circle at 20% 100%,rgba(124,58,237,.24),transparent 35%),
+                linear-gradient(135deg,rgba(30,41,59,.9),rgba(15,23,42,.82));
+            box-shadow:var(--shadow);
+            margin-bottom:20px;
+        }
+
+        .hero::after{
+            content:"✦";
+            position:absolute;
+            right:40px;top:-30px;
+            font-size:180px;
+            color:rgba(255,255,255,.025);
+            transform:rotate(12deg);
+        }
+
+        .hero-content{position:relative;z-index:2;max-width:700px}
+        .hero h2{
+            font-family:"Space Grotesk",sans-serif;
+            font-size:clamp(22px,3vw,31px);
+            letter-spacing:-.035em;
+        }
+        .hero p{color:#aab7ca;font-size:13px;line-height:1.7;margin-top:10px;max-width:650px}
+
+        .hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}
+        .badge{
+            display:inline-flex;align-items:center;gap:7px;
+            padding:8px 11px;
+            border-radius:999px;
+            border:1px solid var(--line);
+            background:rgba(255,255,255,.045);
+            color:#cbd5e1;
+            font-size:11px;font-weight:700;
+        }
+
+        /* STATS */
+        .stats{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:14px;
+            margin-bottom:20px;
+        }
+
+        .stat{
+            padding:18px;
+            border:1px solid var(--line);
+            border-radius:19px;
+            background:var(--panel);
+            backdrop-filter:blur(16px);
+            box-shadow:0 14px 40px rgba(0,0,0,.14);
+            transition:.2s;
+        }
+        .stat:hover{transform:translateY(-3px);border-color:rgba(148,163,184,.25)}
+        .stat-head{display:flex;justify-content:space-between;align-items:center}
+        .stat-icon{
+            width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+            background:rgba(124,58,237,.12);
+            font-size:17px;
+        }
+        .trend{font-size:10px;color:#34d399;font-weight:800}
+        .stat small{display:block;color:#718096;font-size:11px;margin-top:14px}
+        .stat strong{display:block;font-family:"Space Grotesk",sans-serif;font-size:25px;margin-top:3px}
+        .stat .sub{color:#64748b;font-size:10px;margin-top:4px}
+
+        /* MAIN CARD */
+        .card{
+            border:1px solid var(--line);
+            border-radius:var(--radius);
+            background:var(--panel);
+            backdrop-filter:blur(20px);
+            box-shadow:var(--shadow);
+            overflow:hidden;
+        }
+
+        .toolbar{
+            padding:20px;
+            border-bottom:1px solid var(--line);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:15px;
+            flex-wrap:wrap;
+        }
+
+        .section-title{display:flex;align-items:center;gap:11px}
+        .section-title .mini-icon{
+            width:38px;height:38px;border-radius:12px;
+            display:grid;place-items:center;
+            background:rgba(6,182,212,.1);
+            border:1px solid rgba(6,182,212,.14);
+        }
+        .section-title h2{font-family:"Space Grotesk",sans-serif;font-size:17px}
+        .section-title p{font-size:11px;color:#64748b;margin-top:3px}
+
+        .toolbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+        .search{
+            position:relative;
+            min-width:260px;
+        }
+        .search span{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#64748b}
+        .search input{
+            width:100%;
+            border:1px solid var(--line);
+            outline:none;
+            border-radius:12px;
+            padding:11px 13px 11px 38px;
+            color:white;
+            background:var(--panel-soft);
+            transition:.2s;
+            font-size:12px;
+        }
+        .search input:focus{border-color:rgba(139,92,246,.6);box-shadow:0 0 0 4px rgba(124,58,237,.1)}
+
+        .btn{
+            border:1px solid transparent;
+            border-radius:12px;
+            padding:11px 14px;
+            color:#e2e8f0;
+            font-weight:700;
+            font-size:12px;
+            transition:.2s;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            gap:7px;
+        }
+        .btn:hover{transform:translateY(-2px)}
+        .btn-primary{
+            background:linear-gradient(135deg,#7c3aed,#4f46e5);
+            box-shadow:0 9px 22px rgba(79,70,229,.23);
+            color:white;
+        }
+        .btn-secondary{background:rgba(148,163,184,.07);border-color:var(--line)}
+        .btn-danger{background:rgba(244,63,94,.11);border-color:rgba(244,63,94,.16);color:#fb7185}
+        .btn-edit{background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.13);color:#fbbf24}
+
+        .table-wrap{overflow:auto}
+        table{width:100%;border-collapse:collapse;min-width:680px}
+        th{
+            padding:13px 20px;
+            background:var(--panel-soft);
+            color:#64748b;
+            text-transform:uppercase;
+            letter-spacing:.12em;
+            font-size:9px;
+            text-align:left;
+            font-weight:800;
+        }
+        td{
+            padding:15px 20px;
+            border-top:1px solid var(--line);
+            font-size:12px;
+            color:#dbe3ef;
+        }
+        tbody tr{transition:.18s}
+        tbody tr:hover{background:rgba(124,58,237,.045)}
+        .id-badge{
+            width:32px;height:32px;display:grid;place-items:center;
+            border-radius:10px;
+            background:linear-gradient(135deg,rgba(124,58,237,.16),rgba(6,182,212,.08));
+            border:1px solid rgba(124,58,237,.15);
+            color:#c4b5fd;font-weight:800;font-size:11px;
+        }
+        .country{
+            display:flex;align-items:center;gap:11px;font-weight:700;
+        }
+        .country-icon{
+            width:35px;height:35px;display:grid;place-items:center;
+            border-radius:50%;
+            background:linear-gradient(135deg,rgba(6,182,212,.12),rgba(124,58,237,.12));
+            border:1px solid var(--line);
+            font-size:16px;
+        }
+        .country small{display:block;color:#64748b;font-weight:500;font-size:9px;margin-top:2px}
+        .actions{display:flex;gap:7px;flex-wrap:wrap}
+
+        /* EMPTY / LOADING */
+        .state{text-align:center;padding:62px 20px;color:#94a3b8}
+        .state-icon{
+            width:58px;height:58px;border-radius:18px;
+            display:grid;place-items:center;margin:0 auto 14px;
+            background:rgba(124,58,237,.09);
+            font-size:25px;
+        }
+        .state h3{font-family:"Space Grotesk",sans-serif;color:#e2e8f0;font-size:16px}
+        .state p{font-size:11px;margin-top:7px}
+        .spinner{
+            width:34px;height:34px;border-radius:50%;
+            border:3px solid rgba(148,163,184,.18);
+            border-top-color:#8b5cf6;
+            animation:spin .75s linear infinite;
+            margin:0 auto 15px;
+        }
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* MODALS */
+        .overlay{
+            position:fixed;inset:0;z-index:100;
+            display:none;align-items:center;justify-content:center;
+            padding:18px;
+            background:rgba(2,6,23,.72);
+            backdrop-filter:blur(12px);
+        }
+        .overlay.active{display:flex}
+        .modal{
+            width:min(470px,100%);
+            border:1px solid rgba(148,163,184,.16);
+            border-radius:25px;
+            background:linear-gradient(145deg,#111827,#0b1120);
+            box-shadow:0 30px 100px rgba(0,0,0,.55);
+            padding:25px;
+            animation:modalIn .22s ease;
+        }
+        @keyframes modalIn{
+            from{opacity:0;transform:translateY(15px) scale(.97)}
+            to{opacity:1;transform:none}
+        }
+        .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+        .modal-title{display:flex;gap:11px;align-items:center}
+        .modal-title-icon{
+            width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+            background:rgba(124,58,237,.14);
+        }
+        .modal h3{font-family:"Space Grotesk",sans-serif;font-size:19px}
+        .modal-head p{color:#64748b;font-size:10px;margin-top:3px}
+        .close{
+            width:35px;height:35px;border-radius:10px;border:1px solid var(--line);
+            background:rgba(148,163,184,.06);color:#94a3b8;font-size:18px;
+        }
+        .close:hover{color:white;background:rgba(148,163,184,.12)}
+        .field label{display:block;color:#cbd5e1;font-size:11px;font-weight:700;margin-bottom:7px}
+        .field input{
+            width:100%;border:1px solid var(--line);outline:none;border-radius:12px;
+            background:#070c18;color:white;padding:13px;font-size:13px;
+        }
+        .field input:focus{border-color:rgba(139,92,246,.65);box-shadow:0 0 0 4px rgba(124,58,237,.1)}
+        .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:21px}
+        .confirm{text-align:center}
+        .confirm .modal-title{justify-content:center}
+        .confirm-icon{
+            width:65px;height:65px;border-radius:20px;margin:0 auto 17px;
+            display:grid;place-items:center;font-size:28px;
+            background:rgba(244,63,94,.1);
+            border:1px solid rgba(244,63,94,.15);
+        }
+        .confirm p{color:#94a3b8;font-size:12px;line-height:1.6;margin-top:8px}
+
+        /* TOAST */
+        #toast-container{
+            position:fixed;right:22px;top:22px;z-index:200;
+            display:flex;flex-direction:column;gap:9px;
+        }
+        .toast{
+            width:min(360px,calc(100vw - 30px));
+            padding:14px 15px;
+            border-radius:15px;
+            border:1px solid var(--line);
+            background:rgba(15,23,42,.94);
+            backdrop-filter:blur(16px);
+            box-shadow:0 18px 50px rgba(0,0,0,.35);
+            display:flex;gap:11px;align-items:center;
+            animation:toastIn .25s ease;
+        }
+        .toast.success{border-left:3px solid #10b981}
+        .toast.error{border-left:3px solid #f43f5e}
+        .toast.warning{border-left:3px solid #f59e0b}
+        .toast-icon{font-size:17px}
+        .toast strong{display:block;font-size:11px}
+        .toast span{display:block;color:#94a3b8;font-size:10px;margin-top:2px}
+        @keyframes toastIn{from{opacity:0;transform:translateX(25px)}to{opacity:1;transform:none}}
+
+        .footer{
+            display:flex;justify-content:space-between;gap:10px;
+            color:#475569;font-size:10px;padding:17px 3px 0;
+        }
+
+
+        .nav-item{
+            position:relative;
+            overflow:hidden;
+        }
+        .nav-item::after{
+            content:"";
+            position:absolute;
+            inset:0;
+            background:linear-gradient(90deg,rgba(255,255,255,.06),transparent);
+            transform:translateX(-105%);
+            transition:transform .3s ease;
+        }
+        .nav-item:hover::after,.nav-item.active::after{transform:translateX(0)}
+        .nav-item:active{transform:scale(.97)}
+
+        .theme-btn{
+            position:relative;
+            overflow:hidden;
+        }
+        .theme-btn .theme-symbol{
+            display:inline-block;
+            transition:transform .35s ease;
+        }
+        .theme-btn:hover .theme-symbol{transform:rotate(25deg) scale(1.12)}
+
+        body.light .sidebar,
+        body.light .card,
+        body.light .stat{
+            box-shadow:var(--shadow);
+        }
+        body.light .sidebar{
+            background:rgba(255,255,255,.76);
+        }
+        body.light .hero{
+            background:
+                radial-gradient(circle at 80% 10%,rgba(6,182,212,.12),transparent 25%),
+                radial-gradient(circle at 20% 100%,rgba(124,58,237,.13),transparent 35%),
+                linear-gradient(135deg,rgba(255,255,255,.94),rgba(241,245,249,.9));
+        }
+        body.light .hero p,
+        body.light .subtitle{color:#64748b}
+        body.light .nav-item{color:#64748b}
+        body.light .nav-item:hover{color:#172033;background:rgba(71,85,105,.06)}
+        body.light .nav-item.active{color:#312e81;background:rgba(124,58,237,.09)}
+        body.light .search input,
+        body.light .field input{
+            color:#172033;
+            background:rgba(255,255,255,.75);
+        }
+        body.light .search input::placeholder,
+        body.light .field input::placeholder{color:#94a3b8}
+        body.light .modal{
+            background:linear-gradient(145deg,#ffffff,#f8fafc);
+        }
+        body.light th{background:rgba(241,245,249,.75)}
+        body.light td{color:#334155}
+        body.light .state h3{color:#334155}
+        body.light .footer{color:#64748b}
+
+        @media(max-width:1050px){
+            .app{grid-template-columns:78px 1fr}
+            .brand div:not(.brand-logo),.nav-item span:not(.nav-icon),.nav-label,.system p{display:none}
+            .brand{justify-content:center;padding-left:0;padding-right:0}
+            .nav-item{justify-content:center}
+            .system{display:grid;place-items:center;padding:12px}
+        }
+        @media(max-width:800px){
+            .app{display:block;padding:12px}
+            .sidebar{position:relative;top:0;height:auto;min-height:0;margin-bottom:16px;padding:10px}
+            .brand div:not(.brand-logo),.nav-item span:not(.nav-icon),.nav-label,.system p{display:block}
+            .brand{justify-content:flex-start;padding:5px 8px 10px}
+            .nav{flex-direction:row;overflow:auto}
+            .nav-label,.system{display:none}
+            .nav-item{justify-content:flex-start;white-space:nowrap}
+            .stats{grid-template-columns:repeat(2,1fr)}
+            .topbar{align-items:flex-start}
+            .top-actions{display:none}
+        }
+        @media(max-width:560px){
+            .main{padding-top:5px}
+            .hero{padding:22px}
+            .stats{grid-template-columns:1fr 1fr;gap:9px}
+            .stat{padding:14px}
+            .stat strong{font-size:21px}
+            .toolbar{padding:15px}
+            .search{min-width:100%;order:3}
+            .toolbar-actions{width:100%}
+            .toolbar-actions .btn-primary{flex:1}
+            .footer{flex-direction:column}
+        }
+    </style>
+</head>
+
+<body>
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">🌎</div>
+            <div>
+                <strong>Atlas Admin</strong>
+                <span>Panel de administración</span>
+            </div>
+        </div>
+
+        <div class="nav-label">Menú principal</div>
+        <nav class="nav">
+            <button class="nav-item" data-section="dashboard" onclick="seleccionarMenu(this,'dashboard')"><span class="nav-icon">▦</span><span>Dashboard</span></button>
+            <button class="nav-item active" data-section="paises" onclick="seleccionarMenu(this,'paises')"><span class="nav-icon">🌎</span><span>Países</span></button>
+            <button class="nav-item" data-section="estadisticas" onclick="seleccionarMenu(this,'estadisticas')"><span class="nav-icon">📊</span><span>Estadísticas</span></button>
+            <button class="nav-item" data-section="configuracion" onclick="seleccionarMenu(this,'configuracion')"><span class="nav-icon">⚙️</span><span>Configuración</span></button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="system">
+                <div class="system-top"><span class="dot"></span> Sistema operativo</div>
+                <p>API conectada · MySQL activo</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <div class="eyebrow">Centro de administración</div>
+                <h1>Gestión de países</h1>
+                <p class="subtitle">Administrá los registros de tu base de datos de forma simple y rápida.</p>
+            </div>
+            <div class="top-actions">
+                <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">
+                    <span class="theme-symbol" id="themeSymbol">☾</span>
+                </button>
+                <button class="icon-btn" onclick="cargarPaises()" title="Actualizar">↻</button>
+                <div class="avatar">ZA</div>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="hero-content">
+                <div class="eyebrow">Panel principal · CRUD</div>
+                <h2>Todo tu catálogo, en un solo lugar.</h2>
+                <p>
+                    Consultá, agregá, editá y eliminá países conectados directamente con tu API.
+                    La interfaz actualiza los datos automáticamente para mantener la información sincronizada.
+                </p>
+                <div class="hero-badges">
+                    <span class="badge">● API REST</span>
+                    <span class="badge">▣ MySQL</span>
+                    <span class="badge">⚡ Actualización instantánea</span>
+                </div>
+            </div>
+        </section>
+
+        <div id="menuFeedback" style="display:none;margin:-8px 0 16px;padding:11px 14px;border:1px solid var(--line);border-radius:13px;background:var(--panel-soft);color:var(--muted);font-size:11px;">
+            <strong id="menuFeedbackTitle" style="color:var(--text)"></strong>
+            <span id="menuFeedbackText"></span>
+        </div>
+
+        <section class="stats">
+            <div class="stat">
+                <div class="stat-head"><div class="stat-icon">🌎</div><span class="trend">ACTIVO</span></div>
+                <small>Total de países</small>
+                <strong id="totalPaises">0</strong>
+                <div class="sub">Registros encontrados</div>
+            </div>
+            <div class="stat">
+                <div class="stat-head"><div class="stat-icon">✓</div><span class="trend">ONLINE</span></div>
+                <small>Estado del sistema</small>
+                <strong style="font-size:18px">Operativo</strong>
+                <div class="sub">Conexión disponible</div>
+            </div>
+            <div class="stat">
+                <div class="stat-head"><div class="stat-icon">🗄️</div><span class="trend">SQL</span></div>
+                <small>Motor de datos</small>
+                <strong style="font-size:18px">MySQL</strong>
+                <div class="sub">Base de datos relacional</div>
+            </div>
+            <div class="stat">
+                <div class="stat-head"><div class="stat-icon">🔐</div><span class="trend">CRUD</span></div>
+                <small>Operaciones</small>
+                <strong>4</strong>
+                <div class="sub">Crear · Leer · Editar · Eliminar</div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="toolbar">
+                <div class="section-title">
+                    <div class="mini-icon">🌐</div>
+                    <div>
+                        <h2>Catálogo de países</h2>
+                        <p>Administración de registros</p>
+                    </div>
+                </div>
+
+                <div class="toolbar-actions">
+                    <div class="search">
+                        <span>⌕</span>
+                        <input id="buscador" type="text" placeholder="Buscar país..." oninput="filtrarPaises()">
+                    </div>
+                    <button class="btn btn-secondary" onclick="exportarCSV()">⇩ Exportar</button>
+                    <button class="btn btn-primary" onclick="abrirModalCrear()">＋ Nuevo país</button>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>País</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaPaises">
+                        <tr><td colspan="3"><div class="state"><div class="spinner"></div><h3>Cargando información</h3><p>Conectando con la API...</p></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="footer">
+            <span>Atlas Admin · Gestión de Países</span>
+            <span>Conectado a <strong>MySQL</strong> mediante API REST</span>
+        </div>
+    </main>
+</div>
+
+<!-- MODAL CREAR / EDITAR -->
+<div class="overlay" id="modalPais">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title">
+                <div class="modal-title-icon">🌎</div>
+                <div>
+                    <h3 id="modalTitulo">Agregar país</h3>
+                    <p>Completá la información del registro</p>
+                </div>
+            </div>
+            <button class="close" onclick="cerrarModal()">×</button>
+        </div>
+
+        <div class="field">
+            <label for="inputPais">Nombre del país</label>
+            <input id="inputPais" type="text" maxlength="50" placeholder="Ej. Argentina" autocomplete="off">
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn btn-primary" id="btnGuardar" onclick="guardarPais()">Guardar país</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div class="overlay" id="modalEliminar">
+    <div class="modal confirm">
+        <div class="confirm-icon">🗑️</div>
+        <div class="modal-title">
+            <div>
+                <h3>¿Eliminar país?</h3>
+                <p>Esta operación modificará la base de datos.</p>
+            </div>
+        </div>
+        <p>Estás a punto de eliminar <strong id="paisEliminarNombre"></strong>. Esta acción no se puede deshacer.</p>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="cerrarModalEliminar()">Cancelar</button>
+            <button class="btn btn-danger" onclick="confirmarEliminacion()">Sí, eliminar</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+    let paises = [];
+    let paisEditando = null;
+    let paisAEliminar = null;
+
+    function mostrarToast(mensaje, tipo = "success", titulo = "Operación realizada") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast ${tipo}`;
+        const icono = tipo === "error" ? "✕" : tipo === "warning" ? "⚠" : "✓";
+        toast.innerHTML = `
+            <div class="toast-icon">${icono}</div>
+            <div><strong>${escapeHTML(titulo)}</strong><span>${escapeHTML(mensaje)}</span></div>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transform = "translateX(25px)";
+            setTimeout(() => toast.remove(), 250);
+        }, 3000);
+    }
+
+    function cargarPaises() {
+        const tabla = document.getElementById("tablaPaises");
+        tabla.innerHTML = `<tr><td colspan="3"><div class="state"><div class="spinner"></div><h3>Cargando información</h3><p>Conectando con la API...</p></div></td></tr>`;
+
+        fetch("/api/paises")
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                paises = Array.isArray(data) ? data : [];
+                mostrarPaises(paises);
+                document.getElementById("totalPaises").textContent = paises.length;
+            })
+            .catch(error => {
+                console.error(error);
+                tabla.innerHTML = `<tr><td colspan="3"><div class="state"><div class="state-icon">⚠️</div><h3>No se pudieron cargar los países</h3><p>Verificá que el servidor y la API estén funcionando.</p></div></td></tr>`;
+                mostrarToast("No se pudieron cargar los países.", "error", "Error de conexión");
+                document.getElementById("totalPaises").textContent = "—";
+            });
+    }
+
+    function mostrarPaises(lista) {
+        const tabla = document.getElementById("tablaPaises");
+        tabla.innerHTML = "";
+
+        if (!lista.length) {
+            tabla.innerHTML = `<tr><td colspan="3"><div class="state"><div class="state-icon">🌎</div><h3>No se encontraron países</h3><p>Probá con otro término de búsqueda o agregá un nuevo registro.</p></div></td></tr>`;
+            return;
+        }
+
+        lista.forEach(pais => {
+            const fila = document.createElement("tr");
+            fila.innerHTML = `
+                <td><span class="id-badge">${escapeHTML(pais.pais_id)}</span></td>
+                <td>
+                    <div class="country">
+                        <div class="country-icon">🌎</div>
+                        <div>${escapeHTML(pais.pais_descripcion)}<small>Registro #${escapeHTML(pais.pais_id)}</small></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="actions">
+                        <button class="btn btn-edit" onclick="abrirModalEditar(${Number(pais.pais_id)}, '${escapeJS(pais.pais_descripcion)}')">✏ Editar</button>
+                        <button class="btn btn-danger" onclick="abrirModalEliminar(${Number(pais.pais_id)}, '${escapeJS(pais.pais_descripcion)}')">⌫ Eliminar</button>
+                    </div>
+                </td>
+            `;
+            tabla.appendChild(fila);
+        });
+    }
+
+    function filtrarPaises() {
+        const texto = document.getElementById("buscador").value.toLowerCase().trim();
+        const filtrados = paises.filter(pais =>
+            String(pais.pais_descripcion || "").toLowerCase().includes(texto)
+        );
+        mostrarPaises(filtrados);
+    }
+
+    function abrirModalCrear() {
+        paisEditando = null;
+        document.getElementById("modalTitulo").textContent = "Agregar país";
+        document.getElementById("btnGuardar").textContent = "Guardar país";
+        document.getElementById("inputPais").value = "";
+        document.getElementById("modalPais").classList.add("active");
+        setTimeout(() => document.getElementById("inputPais").focus(), 100);
+    }
+
+    function abrirModalEditar(id, descripcion) {
+        paisEditando = id;
+        document.getElementById("modalTitulo").textContent = "Editar país";
+        document.getElementById("btnGuardar").textContent = "Guardar cambios";
+        document.getElementById("inputPais").value = descripcion;
+        document.getElementById("modalPais").classList.add("active");
+        setTimeout(() => document.getElementById("inputPais").focus(), 100);
+    }
+
+    function cerrarModal() {
+        document.getElementById("modalPais").classList.remove("active");
+    }
+
+    function guardarPais() {
+        const input = document.getElementById("inputPais");
+        const descripcion = input.value.trim();
+
+        if (!descripcion) {
+            mostrarToast("Ingresá el nombre del país.", "warning", "Dato requerido");
+            input.focus();
+            return;
+        }
+
+        const esEdicion = paisEditando !== null;
+        const url = esEdicion ? `/api/paises/${paisEditando}` : "/api/paises";
+        const metodo = esEdicion ? "PUT" : "POST";
+
+        const boton = document.getElementById("btnGuardar");
+        boton.disabled = true;
+        boton.textContent = "Guardando...";
+
+        fetch(url, {
+            method: metodo,
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({pais_descripcion: descripcion})
+        })
+        .then(async response => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || "No se pudo realizar la operación.");
+            return data;
+        })
+        .then(() => {
+            cerrarModal();
+            mostrarToast(
+                esEdicion ? "El registro fue actualizado correctamente." : "El país fue agregado correctamente.",
+                "success",
+                esEdicion ? "País actualizado" : "País agregado"
+            );
+            cargarPaises();
+        })
+        .catch(error => {
+            console.error(error);
+            mostrarToast(error.message, "error", "No se pudo guardar");
+        })
+        .finally(() => {
+            boton.disabled = false;
+            boton.textContent = esEdicion ? "Guardar cambios" : "Guardar país";
+        });
+    }
+
+    function abrirModalEliminar(id, nombre) {
+        paisAEliminar = id;
+        document.getElementById("paisEliminarNombre").textContent = nombre;
+        document.getElementById("modalEliminar").classList.add("active");
+    }
+
+    function cerrarModalEliminar() {
+        document.getElementById("modalEliminar").classList.remove("active");
+        paisAEliminar = null;
+    }
+
+    function confirmarEliminacion() {
+        if (paisAEliminar === null) return;
+
+        fetch(`/api/paises/${paisAEliminar}`, {method: "DELETE"})
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || "No se pudo eliminar el país.");
+                return data;
+            })
+            .then(data => {
+                cerrarModalEliminar();
+                mostrarToast(data.mensaje || "País eliminado correctamente.", "success", "País eliminado");
+                cargarPaises();
+            })
+            .catch(error => {
+                console.error(error);
+                cerrarModalEliminar();
+                mostrarToast(error.message, "error", "No se pudo eliminar");
+            });
+    }
+
+    function exportarCSV() {
+        if (!paises.length) {
+            mostrarToast("No hay registros para exportar.", "warning", "Sin datos");
+            return;
+        }
+
+        const filas = [
+            ["ID", "País"],
+            ...paises.map(p => [p.pais_id, p.pais_descripcion])
+        ];
+
+        const csv = filas.map(row =>
+            row.map(value => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")
+        ).join("\n");
+
+        const blob = new Blob(["\ufeff" + csv], {type: "text/csv;charset=utf-8;"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "paises.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+
+        mostrarToast("Se generó el archivo paises.csv.", "success", "Exportación completa");
+    }
+
+    function escapeHTML(texto) {
+        return String(texto ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function escapeJS(texto) {
+        return String(texto ?? "")
+            .replace(/\\/g, "\\\\")
+            .replace(/'/g, "\\'")
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, "\\n")
+            .replace(/\r/g, "\\r");
+    }
+
+    document.getElementById("modalPais").addEventListener("click", function(e) {
+        if (e.target === this) cerrarModal();
+    });
+
+    document.getElementById("modalEliminar").addEventListener("click", function(e) {
+        if (e.target === this) cerrarModalEliminar();
+    });
+
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+            cerrarModal();
+            cerrarModalEliminar();
+        }
+        if (e.key === "Enter" && document.getElementById("modalPais").classList.contains("active")) {
+            guardarPais();
+        }
+    });
+
+
+    // ================================
+    // TEMA CLARO / OSCURO
+    // ================================
+    const savedTheme = localStorage.getItem("atlas-theme");
+    const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+
+    function aplicarTema(tema, guardar = true) {
+        const esClaro = tema === "light";
+        document.body.classList.toggle("light", esClaro);
+
+        const symbol = document.getElementById("themeSymbol");
+        const button = document.getElementById("themeToggle");
+
+        if (symbol) symbol.textContent = esClaro ? "☀" : "☾";
+        if (button) {
+            button.title = esClaro ? "Cambiar a modo oscuro" : "Cambiar a modo claro";
+            button.setAttribute("aria-label", button.title);
+        }
+
+        if (guardar) localStorage.setItem("atlas-theme", esClaro ? "light" : "dark");
+    }
+
+    function toggleTheme() {
+        const nuevoTema = document.body.classList.contains("light") ? "dark" : "light";
+        aplicarTema(nuevoTema);
+        mostrarToast(
+            nuevoTema === "light" ? "Ahora estás usando el modo claro." : "Ahora estás usando el modo oscuro.",
+            "success",
+            "Tema actualizado"
+        );
+    }
+
+    aplicarTema(savedTheme || (prefersLight ? "light" : "dark"), false);
+
+    // ================================
+    // MENÚ INTERACTIVO
+    // ================================
+    function seleccionarMenu(elemento, seccion) {
+        document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+        elemento.classList.add("active");
+
+        const datos = {
+            dashboard: ["Dashboard", "Vista general del sistema."],
+            paises: ["Países", "Administración de los registros de países."],
+            estadisticas: ["Estadísticas", "Resumen de los datos disponibles."],
+            configuracion: ["Configuración", "Opciones de personalización de la interfaz."]
+        };
+
+        const info = datos[seccion] || datos.paises;
+        const feedback = document.getElementById("menuFeedback");
+        document.getElementById("menuFeedbackTitle").textContent = info[0] + " · ";
+        document.getElementById("menuFeedbackText").textContent = info[1];
+        feedback.style.display = "block";
+
+        // Para que el menú sea funcional sin romper el CRUD actual:
+        // Dashboard, Estadísticas y Configuración muestran una confirmación visual.
+        // Países vuelve al catálogo CRUD.
+        if (seccion === "paises") {
+            document.querySelector(".card").scrollIntoView({behavior:"smooth", block:"start"});
+        } else {
+            window.scrollTo({top:0, behavior:"smooth"});
+        }
+
+        if (seccion === "estadisticas") {
+            mostrarToast(`Actualmente hay ${paises.length} país(es) registrados.`, "success", "Estadísticas");
+        }
+        if (seccion === "configuracion") {
+            mostrarToast("Podés cambiar el tema desde el botón ☾/☀ de la barra superior.", "success", "Configuración");
+        }
+        if (seccion === "dashboard") {
+            mostrarToast("Vista general del sistema activa.", "success", "Dashboard");
+        }
+    }
+
+    cargarPaises();
+</script>
+</body>
+</html>

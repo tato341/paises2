@@ -1,0 +1,193 @@
+const express = require("express");
+const mysql = require("mysql2");
+
+const app = express();
+const PORT = 3000;
+
+// Permite recibir datos JSON
+app.use(express.json());
+
+// Permite utilizar archivos de la carpeta public
+app.use(express.static("public"));
+
+// Conexión a MySQL
+const db = mysql.createConnection({
+    host: '127.0.0.1',
+    user: 'paises_app',
+    password: 'PaisesApp123!',
+    database: 'Paises_7B'
+});
+
+
+// Verificar conexión
+db.connect((error) => {
+    if (error) {
+        console.error("Error al conectar con MySQL:", error);
+        return;
+    }
+
+    console.log("Conectado a MySQL");
+});
+
+// ===============================
+// GET - Obtener todos los países
+// ===============================
+app.get("/api/paises", (req, res) => {
+
+    const sql = "SELECT * FROM paises ORDER BY pais_id";
+
+    db.query(sql, (error, resultados) => {
+
+        if (error) {
+            console.error("ERROR SQL /api/paises:", error);
+            return res.status(500).json({
+                error: error.message,
+                code: error.code,
+                sql: error.sql
+            });
+        }
+
+
+        res.json(resultados);
+    });
+});
+
+// ===============================
+// GET - Obtener un país
+// ===============================
+app.get("/api/paises/:id", (req, res) => {
+
+    const id = req.params.id;
+
+    const sql = "SELECT * FROM paises WHERE pais_id = ?";
+
+    db.query(sql, [id], (error, resultados) => {
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({
+                error: "Error al buscar el país"
+            });
+        }
+
+        if (resultados.length === 0) {
+            return res.status(404).json({
+                error: "País no encontrado"
+            });
+        }
+
+        res.json(resultados[0]);
+    });
+});
+
+// ===============================
+// POST - Crear un país
+// ===============================
+app.post("/api/paises", (req, res) => {
+
+    const { pais_descripcion } = req.body;
+
+    if (!pais_descripcion) {
+        return res.status(400).json({
+            error: "Debe ingresar la descripción del país"
+        });
+    }
+
+    const sql = `
+        INSERT INTO paises (pais_descripcion)
+        VALUES (?)
+    `;
+
+    db.query(sql, [pais_descripcion], (error, resultado) => {
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({
+                error: "Error al crear el país"
+            });
+        }
+
+        res.status(201).json({
+            mensaje: "País creado correctamente",
+            pais_id: resultado.insertId,
+            pais_descripcion: pais_descripcion
+        });
+    });
+});
+
+// ===============================
+// PUT - Modificar un país
+// ===============================
+app.put("/api/paises/:id", (req, res) => {
+
+    const id = req.params.id;
+    const { pais_descripcion } = req.body;
+
+    if (!pais_descripcion) {
+        return res.status(400).json({
+            error: "Debe ingresar la descripción del país"
+        });
+    }
+
+    const sql = `
+        UPDATE paises
+        SET pais_descripcion = ?
+        WHERE pais_id = ?
+    `;
+
+    db.query(sql, [pais_descripcion, id], (error, resultado) => {
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({
+                error: "Error al modificar el país"
+            });
+        }
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({
+                error: "País no encontrado"
+            });
+        }
+
+        res.json({
+            mensaje: "País modificado correctamente"
+        });
+    });
+});
+
+// ===============================
+// DELETE - Eliminar un país
+// ===============================
+app.delete("/api/paises/:id", (req, res) => {
+
+    const id = req.params.id;
+
+    const sql = "DELETE FROM paises WHERE pais_id = ?";
+
+    db.query(sql, [id], (error, resultado) => {
+
+        if (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                error: "No se puede eliminar el país. Puede tener provincias asociadas."
+            });
+        }
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({
+                error: "País no encontrado"
+            });
+        }
+
+        res.json({
+            mensaje: "País eliminado correctamente"
+        });
+    });
+});
+
+// Iniciar servidor
+app.listen(PORT, () => {
+    console.log(`Servidor funcionando en http://localhost:${PORT}`);
+});
